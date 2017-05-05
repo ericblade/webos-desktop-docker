@@ -20,6 +20,17 @@ scripts provide.
     docker build -t webos .
     docker run --security-opt seccomp=unconfined -e DISPLAY=192.168.0.1:0.0 -e QT_GRAPHICSSYSTEM=native -i -t webos /bin/bash
 
+until we get this working, you'll want to start bash as above.  Once you're in bash, do
+
+    cd build-desktop
+    ./service-bus.sh start
+    ./service-bus.sh services
+    (wait a cpl seconds for services to get all running)
+    ./run-luna-sysmgr.sh
+
+then debug it. :-)
+
+
 # Note
 This crashes with a failure in xcb attempting to enumerate displays.  Not sure why. Not sure if can be fixed.
 
