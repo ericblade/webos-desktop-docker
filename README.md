@@ -15,10 +15,12 @@ scripts provide.
 
 # To run
 
-docker build -t webos .
 (replace 192.168.0.1 with your IP address below)
-docker run --security-opt seccomp=unconfined -e DISPLAY=192.168.0.1:0.0 -e QT_GRAPHICSSYSTEM=native -i -t webos /bin/bash
+
+    docker build -t webos .
+    docker run --security-opt seccomp=unconfined -e DISPLAY=192.168.0.1:0.0 -e QT_GRAPHICSSYSTEM=native -i -t webos /bin/bash
 
 # Note
 This crashes with a failure in xcb attempting to enumerate displays.  Not sure why. Not sure if can be fixed.
 
+Image should include gdb and other tools, if you want to try to debug it.
