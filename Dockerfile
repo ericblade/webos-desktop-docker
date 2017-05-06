@@ -1,3 +1,7 @@
+# TODO: LunaUniversalSearchMgr needs to have some bad casts around line 225 in OpenSearchsomething.c patched out
+# TODO: Something is still going wrong with service-bus.sh init, it works when i run it manually from command line, but not from docker ?
+# TODO: sadly, LunaSysMgr is still blowing up on the attempt to figure out the display.
+
 FROM ubuntu:12.04
 MAINTAINER Eric Blade <blade.eric@gmail.com>
 WORKDIR /root
@@ -40,23 +44,8 @@ ENV LSM_TAG=$luna_sysmgr
 
 RUN ./build-component.sh cmake
 
-ARG cmake_modules_webos=12
+ARG cmake_modules_webos=19
 RUN ./build-component.sh cmake-modules-webos $cmake_modules_webos
-
-ARG cjson=35
-RUN ./build-component.sh cjson $cjson
-
-ARG pbnjson=7
-RUN ./build-component.sh pbnjson $pbnjson
-
-ARG pmloglib=21
-RUN ./build-component.sh pmloglib $pmloglib
-
-ARG nyx_lib=58
-RUN ./build-component.sh nyx-lib $nyx_lib
-
-ARG luna_service2=147
-RUN ./build-component.sh luna-service2 $luna_service2
 
 ARG qt4=4
 RUN ./build-component.sh qt4 $qt4
@@ -67,8 +56,23 @@ RUN ./build-component.sh npapi-headers $npapi_headers
 ARG luna_webkit_api=1.01
 RUN ./build-component.sh luna-webkit-api $luna_webkit_api
 
+ARG cjson=35
+RUN ./build-component.sh cjson $cjson
+
+ARG pmloglib=21
+RUN ./build-component.sh pmloglib $pmloglib
+
+ARG luna_service2=147
+RUN ./build-component.sh luna-service2 $luna_service2
+
 ARG webkit=0.54
 RUN ./build-component.sh webkit $webkit
+
+ARG pbnjson=7
+RUN ./build-component.sh pbnjson $pbnjson
+
+ARG nyx_lib=58
+RUN ./build-component.sh nyx-lib $nyx_lib
 
 ARG luna_sysmgr_ipc=2
 RUN ./build-component.sh luna-sysmgr-ipc $luna_sysmgr_ipc
@@ -101,7 +105,7 @@ RUN ./build-component.sh librolegen $librolegen
 
 # TODO: LunaUniversalSearchMgr is not installed?!
 ARG luna_universalsearchmgr=3
-RUN ./build-component.sh luna-universalsearchmgr $luna_universalsearchmgr
+RUN sleep 6 && ./build-component.sh luna-universalsearchmgr $luna_universalsearchmgr && sleep 90
 
 ARG luna_applauncher=1.00
 RUN ./build-component.sh luna-applauncher $luna_applauncher
@@ -224,5 +228,14 @@ RUN ./install-webos-desktop.sh
 # RUN ls -al /usr/lib/luna
 
 USER developer
-RUN sudo mount / -o remount,user_xattr && ./service-bus.sh start && sleep 2 && ./service-bus.sh init && sleep 10
-CMD sudo mount / -o remount,user_xattr && ./service-bus.sh start && sleep 2 && ./service-bus.sh services && sleep 10 && ./run-luna-sysmgr.sh
+
+# RUN sudo mount / -o remount,user_xattr && ./service-bus.sh start && sleep 2 && ./service-bus.sh init && sleep 10
+# CMD sudo mount / -o remount,user_xattr && ./service-bus.sh start && sleep 2 && ./service-bus.sh services && sleep 10 && ./run-luna-sysmgr.sh
+# mount errors with "mount: permission denied" so apparently we can't get the user_xattr field set. possibly might need to do it at the VM or OS level?
+
+# due to errors that occur in the initial init process, must re-run it a second time. argh.
+RUN ./service-bus.sh start && ./service-bus.sh init
+
+#RUN ./service-bus.sh start && sleep 5 && ./service-bus.sh init && sleep 60; exit 0
+#RUN ./service-bus.sh start && sleep 5 && ./service-bus.sh init && sleep 60; exit 0
+CMD ./service-bus.sh start && sleep 2 && ./service-bus.sh services && sleep 10 && ./run-luna-sysmgr.sh
